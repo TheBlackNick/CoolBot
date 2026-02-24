@@ -1,13 +1,127 @@
-import os
 import telebot
-from dotenv import load_dotenv
+import wikipedia
+import re
 
-load_dotenv ()
+# Создаем экземпляр бота
+bot = telebot.TeleBot('8245109729:AAHD6OB10e3nps-D-KmgLljmuUJfOeE1e3A')
 
-bot = telebot.TeleBot(os.getenv("BOT_TOKEN"))
+# Устанавливаем русский язык в Wikipedia
+wikipedia.set_lang("ru")
 
-@bot.message_handler(commands = ['start'])
-def start (message):
-    bot.reply_to(message, f"Всё работает, можно творить!\n{message.from_user.full_name}")
 
-bot.polling()
+# Чистим текст статьи в Wikipedia и ограничиваем его тысячей символов
+def getwiki(s):
+    try:
+        ny = wikipedia.page(s)
+
+        # Получаем первую тысячу символов
+        wikitext = ny.content[:1000]
+
+        # Разделяем по точкам
+        wikimas = wikitext.split('.')
+
+        # Отбрасываем остальное после последней точки
+        wikimas = wikimas[:-1]
+
+        # Создаем пустую переменную для текста
+        wikitext2 = ''
+
+        # Проходимся по строкам, где нет знаков «равно» (то есть все, кроме заголовков)
+        for x in wikimas:
+            if not ('==' in x):
+                # Если в строке осталось больше трех символов, добавляем ее к нашей переменной и возвращаем утерянные при разделении строк точки на место
+                if len(x.strip()) > 3:
+                    wikitext2 = wikitext2 + x + '.'
+            else:
+                break
+
+        # Теперь при помощи регулярных выражений убираем разметку
+        # Используем raw strings (r'...') для корректной обработки escape-последовательностей
+        wikitext2 = re.sub(r'\([^()]*\)', '', wikitext2)
+        wikitext2 = re.sub(r'\([^()]*\)', '', wikitext2)
+        wikitext2 = re.sub(r'\{[^\{\}]*\}', '', wikitext2)
+
+        # Если после очистки текст пустой или слишком короткий
+        if len(wikitext2.strip()) < 10:
+            return None
+
+        # Возвращаем текстовую строку
+        return wikitext2
+
+    # Обрабатываем исключение, которое мог вернуть модуль wikipedia при запросе
+    except Exception as e:
+        return None
+
+
+# Функция, обрабатывающая команду /start
+@bot.message_handler(commands=["start"])
+def start(m, res=False):
+    bot.send_message(m.chat.id, 'Привет! Я бот-энциклопедия. Чтобы найти информацию, используй команду /searchw')
+
+
+# Функция, обрабатывающая команду /searchw
+@bot.message_handler(commands=["searchw"])
+def search_wikipedia(message):
+    # Получаем текст после команды /searchw
+    command_parts = message.text.split(maxsplit=1)
+
+    # Проверяем, ввел ли пользователь запрос
+    if len(command_parts) > 1:
+        search_query = command_parts[1]
+
+        # Отправляем первое сообщение с эмодзи поиска
+        sent_message = bot.send_message(
+            message.chat.id,
+            f'Информацию о {search_query} 🔍'
+        )
+
+        # Ищем информацию
+        result = getwiki(search_query)
+
+        # Проверяем результат
+        if result:
+            # Добавляем информацию о том, кто запросил (для групповых чатов)
+            if message.chat.type in ['group', 'supergroup']:
+                result = f"Запрос от {message.from_user.first_name}:\n\n{result}"
+
+            # Обновляем сообщение с результатом
+            bot.edit_message_text(
+                chat_id=message.chat.id,
+                message_id=sent_message.message_id,
+                text=result
+            )
+        else:
+            # Добавляем информацию о том, кто запросил (для групповых чатов)
+            if message.chat.type in ['group', 'supergroup']:
+                not_found_text = f"{message.from_user.first_name}, информация не найдена"
+            else:
+                not_found_text = 'Информация не найдена'
+
+            # Обновляем сообщение, что информация не найдена
+            bot.edit_message_text(
+                chat_id=message.chat.id,
+                message_id=sent_message.message_id,
+                text=not_found_text
+            )
+    else:
+        # Проверяем тип чата для персонализированного ответа
+        if message.chat.type in ['group', 'supergroup']:
+            bot.send_message(
+                message.chat.id,
+                f'{message.from_user.first_name}, пожалуйста, укажите, что искать. Например: /searchw Python'
+            )
+        else:
+            bot.send_message(
+                message.chat.id,
+                'Пожалуйста, укажите, что искать. Например: /searchw Python'
+            )
+
+
+# Получение сообщений от юзера (не связанных с командами) - бот игнорирует их
+@bot.message_handler(content_types=["text"])
+def handle_text(message):
+    pass  # Ничего не делаем, бот молчит
+
+
+# Запускаем бота
+bot.polling(none_stop=True, interval=0)
