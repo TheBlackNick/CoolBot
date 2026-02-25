@@ -1,4 +1,4 @@
-from config import bot
+from config import bot  # Добавляем этот импорт
 
 def register_admin_handlers():
     @bot.message_handler(commands=['admins'])

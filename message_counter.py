@@ -1,4 +1,4 @@
-from config import bot
+from config import bot  # Добавляем этот импорт
 from database import save_message, get_total_messages, get_messages_since, get_user_stats
 import telebot
 from datetime import datetime

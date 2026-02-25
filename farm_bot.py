@@ -1,6 +1,6 @@
 import random
 import telebot
-from config import bot
+from config import bot  # Добавляем этот импорт
 from database import get_or_create_user, update_fural, can_farm, get_time_until_next_farm, get_top_players, \
     get_user_balance
 

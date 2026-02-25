@@ -1,4 +1,4 @@
-import telebot
+from config import init_bot
 import database
 import wikipedia_bot
 import farm_bot
@@ -6,13 +6,18 @@ import admin_bot
 import ping_bot
 import message_counter
 
-bot = telebot.TeleBot("BOT_TOKEN")
+# Токен бота (вставь свой)
+TOKEN = 'BOT_TOKEN'
+
+# Инициализируем бота с токеном
+bot = init_bot(TOKEN)
 
 # ВАЖНО: Сначала регистрируем обработчики команд
 wikipedia_bot.register_wikipedia_handlers()
 farm_bot.register_farm_handlers()
 admin_bot.register_admin_handlers()
-ping_bot.register_ping_handlers() 
+ping_bot.register_ping_handlers()
+
 # ПОТОМ регистрируем обработчик слова "счётчик"
 message_counter.register_counter_handlers()
 

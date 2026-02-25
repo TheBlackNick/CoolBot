@@ -1,6 +1,6 @@
 import wikipedia
 import re
-from config import bot
+from config import bot  # Добавляем этот импорт
 
 # Устанавливаем русский язык в Wikipedia
 wikipedia.set_lang("ru")
