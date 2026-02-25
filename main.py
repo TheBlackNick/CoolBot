@@ -1,12 +1,10 @@
-import telebot
+from config import bot
 import database
 import wikipedia_bot
 import farm_bot
 import admin_bot
 import ping_bot
 import message_counter
-
-bot = telebot.TeleBot("BOT_TOKEN")
 
 # ВАЖНО: Сначала регистрируем обработчики команд
 wikipedia_bot.register_wikipedia_handlers()
