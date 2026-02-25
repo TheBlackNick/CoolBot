@@ -1,6 +1,8 @@
 import random
+import telebot
 from config import bot
-from database import get_or_create_user, update_fural, can_farm, get_time_until_next_farm, get_top_players
+from database import get_or_create_user, update_fural, can_farm, get_time_until_next_farm, get_top_players, \
+    get_user_balance
 
 # Словарь для хранения временных данных дропов
 # Формат: {user_id: {"attempts_left": 4, "current_drop": None}}
@@ -143,13 +145,15 @@ def register_farm_handlers():
         first_name = message.from_user.first_name
 
         # Получаем или создаем пользователя
-        user = get_or_create_user(user_id, username, first_name)
+        get_or_create_user(user_id, username, first_name)
 
-        word = get_fural_word(user[3])
-        response = f"{first_name}, у тебя {user[3]} {word}"
+        # Получаем баланс
+        balance = get_user_balance(user_id)
+        word = get_fural_word(balance)
+        response = f"{first_name}, у тебя {balance} {word}"
         bot.reply_to(message, response)
 
-    @bot.callback_query_handler(func=lambda call: True)
+    @bot.callback_query_handler(func=lambda call: call.data == "try_again" or call.data == "claim_drop")
     def handle_callback(call):
         user_id = call.from_user.id
 
@@ -237,19 +241,18 @@ def register_farm_handlers():
             update_fural(user_id, final_drop["amount"])
 
             # Получаем обновленное количество
-            cursor.execute('SELECT fural FROM users WHERE user_id = ?', (user_id,))
-            total = cursor.fetchone()[0]
+            balance = get_user_balance(user_id)
 
             # Формируем финальное сообщение с правильным склонением
             word = get_fural_word(final_drop['amount'])
-            total_word = get_fural_word(total)
+            total_word = get_fural_word(balance)
 
             if final_drop["rarity"] == "Легендарный":
-                final_message = f"{first_name}, ТЕБЕ ВЫПАЛ ЛЕГЕНДАРНЫЙ ДРОП! Ты получил {final_drop['amount']} {word}! Всего: {total} {total_word}"
+                final_message = f"{first_name}, ТЕБЕ ВЫПАЛ ЛЕГЕНДАРНЫЙ ДРОП! Ты получил {final_drop['amount']} {word}! Всего: {balance} {total_word}"
             elif final_drop["rarity"] == "Эпический":
-                final_message = f"{first_name}, Эпический дроп! Ты получил {final_drop['amount']} {word}. Всего: {total} {total_word}"
+                final_message = f"{first_name}, Эпический дроп! Ты получил {final_drop['amount']} {word}. Всего: {balance} {total_word}"
             else:
-                final_message = f"{first_name}, ты получил {final_drop['amount']} {word} ({final_drop['rarity']} дроп). Всего: {total} {total_word}"
+                final_message = f"{first_name}, ты получил {final_drop['amount']} {word} ({final_drop['rarity']} дроп). Всего: {balance} {total_word}"
 
             # Удаляем временные данные
             del temp_drops[user_id]
