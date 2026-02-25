@@ -1,7 +1,15 @@
-from config import bot  # Добавляем этот импорт
 from database import save_message, get_total_messages, get_messages_since, get_user_stats
 import telebot
 from datetime import datetime
+
+# Бот будет передан из main.py
+bot = None
+
+
+def set_bot(bot_instance):
+    global bot
+    bot = bot_instance
+
 
 # Словарь для временного хранения выбранного периода
 temp_counter = {}

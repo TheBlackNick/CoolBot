@@ -1,8 +1,16 @@
 import random
 import telebot
-from config import bot  # Добавляем этот импорт
 from database import get_or_create_user, update_fural, can_farm, get_time_until_next_farm, get_top_players, \
     get_user_balance
+
+# Бот будет передан из main.py
+bot = None
+
+
+def set_bot(bot_instance):
+    global bot
+    bot = bot_instance
+
 
 # Словарь для хранения временных данных дропов
 # Формат: {user_id: {"attempts_left": 4, "current_drop": None}}

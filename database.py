@@ -198,29 +198,6 @@ def get_messages_since(user_id=None, chat_id=None, hours=0, days=0):
         return cursor.fetchone()[0]
 
 
-# Функция для получения топ-10 самых активных пользователей в чате
-def get_top_chatters(chat_id, limit=10, hours=0, days=0):
-    with get_db() as conn:
-        cursor = conn.cursor()
-        query = """
-            SELECT first_name, username, COUNT(*) as msg_count 
-            FROM messages 
-            WHERE chat_id = ?
-        """
-        params = [chat_id]
-
-        if hours > 0 or days > 0:
-            time_ago = datetime.now() - timedelta(hours=hours, days=days)
-            query += " AND timestamp >= ?"
-            params.append(time_ago)
-
-        query += " GROUP BY user_id ORDER BY msg_count DESC LIMIT ?"
-        params.append(limit)
-
-        cursor.execute(query, params)
-        return cursor.fetchall()
-
-
 # Функция для получения статистики по конкретному пользователю
 def get_user_stats(user_id, chat_id=None):
     with get_db() as conn:

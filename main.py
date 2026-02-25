@@ -1,4 +1,4 @@
-from config import init_bot
+import telebot
 import database
 import wikipedia_bot
 import farm_bot
@@ -6,11 +6,15 @@ import admin_bot
 import ping_bot
 import message_counter
 
-# Токен бота (вставь свой)
-TOKEN = 'BOT_TOKEN'
+# Инициализируем бота
+bot = telebot.TeleBot('BOT_TOKEN')
 
-# Инициализируем бота с токеном
-bot = init_bot(TOKEN)
+# Передаем бота во все модули
+wikipedia_bot.set_bot(bot)
+farm_bot.set_bot(bot)
+admin_bot.set_bot(bot)
+ping_bot.set_bot(bot)
+message_counter.set_bot(bot)
 
 # ВАЖНО: Сначала регистрируем обработчики команд
 wikipedia_bot.register_wikipedia_handlers()

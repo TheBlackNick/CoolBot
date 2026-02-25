@@ -1,6 +1,12 @@
 import wikipedia
 import re
-from config import bot  # Добавляем этот импорт
+
+# Бот будет передан из main.py
+bot = None
+
+def set_bot(bot_instance):
+    global bot
+    bot = bot_instance
 
 # Устанавливаем русский язык в Wikipedia
 wikipedia.set_lang("ru")

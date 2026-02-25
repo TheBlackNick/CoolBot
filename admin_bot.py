@@ -1,4 +1,9 @@
-from config import bot  # Добавляем этот импорт
+# Бот будет передан из main.py
+bot = None
+
+def set_bot(bot_instance):
+    global bot
+    bot = bot_instance
 
 def register_admin_handlers():
     @bot.message_handler(commands=['admins'])
