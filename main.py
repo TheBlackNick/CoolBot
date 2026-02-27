@@ -564,7 +564,7 @@ def farm_fural(message):
     bot.send_message(message.chat.id, drop_info, reply_markup=keyboard)
 
 
-# Обработчик слова "топ" (таблица лидеров)
+# Обработчик слова "топ" (таблица лидеров) - ИСПРАВЛЕННАЯ ВЕРСИЯ
 @bot.message_handler(func=lambda message: message.text and message.text.lower().strip() == "топ")
 def show_top(message):
     top_players = get_top_players(10)
@@ -576,15 +576,12 @@ def show_top(message):
     response = "ТОП-10 ФАРМЕРОВ ФУРАЛЕЙ:\n"
 
     for i, (first_name, username, fural) in enumerate(top_players, 1):
-        if username:
-            name_display = f"@{username}"
-        else:
-            name_display = first_name
-
+        # Используем только имя, без @username чтобы не пинговать
+        name_display = first_name
         word = get_fural_word(fural)
         response += f"{i}. {name_display} - {fural} {word}\n"
 
-    bot.reply_to(message, response)
+    bot.send_message(message.chat.id, response)
 
 
 # Обработчик слова "счётчик" (статистика сообщений)
